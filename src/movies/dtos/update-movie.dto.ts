@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from "class-validator";
+import { ArrayMinSize, IsArray, IsOptional, IsString } from "class-validator";
 
 export class UpdateMovieDto {
   @IsString()
@@ -16,4 +16,18 @@ export class UpdateMovieDto {
   @IsArray()
   @IsOptional()
   images: any[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMinSize(1)
+  casts: string[];
+
+  @IsString()
+  @IsOptional()
+  rating: string;
+
+  @IsString()
+  @IsOptional()
+  release_date: string;
 }

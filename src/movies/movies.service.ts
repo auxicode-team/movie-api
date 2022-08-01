@@ -17,13 +17,24 @@ export class MoviesService {
   ) {}
 
   create(data: CreateMovieDto): Promise<Movie> {
-    const { title, description, category, images } = data;
+    const {
+      title,
+      description,
+      category,
+      images,
+      casts,
+      rating,
+      release_date,
+    } = data;
 
     const newMovie = new this.movieModel({
       title,
       description,
       category,
       images,
+      casts,
+      rating,
+      release_date,
     });
 
     return newMovie.save();
