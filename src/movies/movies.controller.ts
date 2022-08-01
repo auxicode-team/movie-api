@@ -22,6 +22,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { MultipleImageUploadInterceptor } from "../interceptors/MultipleImageUploadInterceptor";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
+import { FilterMovieDto } from "./dtos/filter-movie.dto";
 
 @Controller("movies")
 export class MoviesController {
@@ -31,14 +32,11 @@ export class MoviesController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  @Get("/getAll")
-  async getAllMovies(): Promise<ResponseBody<Movie[]>> {
-    const allMovies = await this.moviesService.getAll();
+  @Post("/getAll")
+  async getAllMovies(@Body() filter: FilterMovieDto) {
+    const allMovies = await this.moviesService.getAll(filter);
 
-    return {
-      message: "All Movies",
-      data: allMovies,
-    };
+    return allMovies;
   }
 
   @Get("/get/:id")

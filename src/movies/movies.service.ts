@@ -1,13 +1,15 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model } from "mongoose";
+import { FilterQuery, Model, Types } from "mongoose";
 import { DeleteResult } from "mongodb";
 
 import { Movie } from "./movie.model";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
+import { FilterMovieDto } from "./dtos/filter-movie.dto";
 import { getPublicIdsFromImageUrl } from "../utils/getPublicIdsFromImageUrl";
+import { addPagination, PaginatedResult } from "../utils/addPagination";
 
 @Injectable()
 export class MoviesService {
@@ -48,8 +50,35 @@ export class MoviesService {
     return this.movieModel.findOne(criteria);
   }
 
-  async getAll(): Promise<Movie[]> {
-    return this.movieModel.find({});
+  async getAll(filter: FilterMovieDto): Promise<PaginatedResult<Movie>> {
+    const { page, limit, searchTerm, category } = filter;
+    const filterCriteria: any = {};
+
+    if (category && category.length > 0) {
+      filterCriteria.category = {
+        $in: category.map((c) => new Types.ObjectId(c)),
+      };
+    }
+
+    if (searchTerm) {
+      filterCriteria.$or = [
+        {
+          title: {
+            $regex: searchTerm,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    const [data] = await this.movieModel.aggregate([
+      {
+        $match: filterCriteria,
+      },
+      ...addPagination(page, limit),
+    ]);
+
+    return data;
   }
 
   async update(id: string, data: UpdateMovieDto): Promise<Movie> {
